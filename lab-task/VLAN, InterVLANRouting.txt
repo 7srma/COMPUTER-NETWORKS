@@ -1,0 +1,95 @@
+1. Go to Global Configuration Mode
+-------------------------------------
+Switch>enable
+Switch#configure terminal
+
+2. VLAN Creation
+------------------------------------
+Switch(config)#vlan 10
+Switch(config-vlan)#name Sales
+Switch(config-vlan)#exit
+
+Switch(config)#vlan 20
+Switch(config-vlan)#name HR
+Switch(config-vlan)#exit
+Switch(config)#exit
+
+3. View VLAN Database
+-----------------------------------
+Switch#show vlan brief
+
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1    default                          active    Fa0/1, Fa0/2, Fa0/3, Fa0/4
+                                                Fa0/5, Fa0/6, Fa0/7, Fa0/8
+                                                Fa0/9, Fa0/10, Fa0/11, Fa0/12
+                                                Fa0/13, Fa0/14, Fa0/15, Fa0/16
+                                                Fa0/17, Fa0/18, Fa0/19, Fa0/20
+                                                Fa0/21, Fa0/22, Fa0/23, Fa0/24
+                                                Gig0/1, Gig0/2
+10   Sales                            active    
+20   HR                               active    
+1002 fddi-default                     active    
+1003 token-ring-default               active    
+1004 fddinet-default                  active    
+1005 trnet-default                    active    
+
+4. VLAN Assign on ports
+--------------------------------------
+Switch(config)#interface range f0/2-3
+Switch(config-if-range)#switchport mode access
+Switch(config-if-range)#switchport access vlan 10
+Switch(config-if-range)#exit
+
+Switch(config)#interface range f0/11, f0/14
+Switch(config-if-range)#switchport mode access
+Switch(config-if-range)#switchport access vlan 20
+Switch(config-if-range)#exit
+
+Switch#show vlan brief
+
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1    default                          active    Fa0/1, Fa0/4, Fa0/5, Fa0/6
+                                                Fa0/7, Fa0/8, Fa0/9, Fa0/10
+                                                Fa0/12, Fa0/13, Fa0/15, Fa0/16
+                                                Fa0/17, Fa0/18, Fa0/19, Fa0/20
+                                                Fa0/21, Fa0/22, Fa0/23, Fa0/24
+                                                Gig0/1, Gig0/2
+10   Sales                            active    Fa0/2, Fa0/3
+20   HR                               active    Fa0/11, Fa0/14
+1002 fddi-default                     active    
+1003 token-ring-default               active    
+1004 fddinet-default                  active    
+1005 trnet-default                    active    
+
+
+ -----  Now, sales can communicate with sales only. and HR can communicate with HR only. 
+If sales wants to communicate with HR, then you have to configure inter vlan routing! --------
+
+5. Switchport Mode Trunk [switch to switch/router]
+----------------------------------------------------------
+Switch(config)#int f0/1
+Switch(config-if)#switchport mode trunk
+Switch(config-if)#exit
+
+6. Inter-VLAN-Routing [Router On A Stick (ROAS)]
+----------------------------------------------------------
+Router>en
+Router#conf t
+Router(config)#int f0/0
+Router(config-if)#no shutdown
+Router(config-if)#exit
+
+Router(config)#int f0/0.10
+Router(config-subif)#encapsulation dot1q 10
+Router(config-subif)#ip address 172.16.10.1 255.255.255.0
+Router(config-subif)#description Sales Department
+Router(config-subif)#exit
+
+Router(config)#int f0/0.20
+Router(config-subif)#encapsulation dot1q 20
+Router(config-subif)#ip address 172.16.20.1 255.255.255.128
+Router(config-subif)#description HR Department
+Router(config-subif)#exit
+

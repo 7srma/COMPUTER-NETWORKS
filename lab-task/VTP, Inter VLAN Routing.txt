@@ -1,0 +1,78 @@
+Core Switch/Server Switch
+--------------------------------
+Switch>en
+Switch#conf t
+Switch(config)#hostname Core
+
+Create VLAN-----
+Core(config)#vlan 10
+Core(config-vlan)#name Sales
+Core(config-vlan)#exit
+Core(config)#vlan 20
+Core(config-vlan)#name Accounts
+Core(config-vlan)#exit
+
+View VLAN Database--------
+Core#show vlan brief
+
+VTP Server Configure--------
+Core(config)#vtp mode server
+Core(config)#vtp domain AIUB
+Core(config)#vtp pass aiub
+
+Switch to Switch port Trunk---------
+Core(config)#int f0/1
+Core(config-if)#switchport mode trunk
+Core(config-if)#exit
+
+
+Access Switch/Client Switch
+-------------------------------------
+Switch>en
+Switch#conf t
+Switch(config)#hostname Access
+
+VTP Client----------
+Access(config)#vtp mode Client
+Access(config)#vtp domain AIUB
+Access(config)#vtp password aiub
+
+Switch to Switch port Trunk---------
+Access(config)#int f0/5
+Access(config-if)#switchport mode trunk
+Access(config-if)#exit
+
+Ports Assign On VLAN-------
+Access(config)#interface range f0/2-3
+Access(config-if-range)#switchport mode access
+Access(config-if-range)#switchport access vlan 10
+Access(config-if-range)#exit
+
+Access(config)#interface range f0/4, f0/6
+Access(config-if-range)#switchport mode access
+Access(config-if-range)#switchport access vlan 20
+Access(config-if-range)#ex
+
+On Router, COnfigure Inter VLAN Routing
+-------------------------------------------
+Router>en
+Router#conf t
+Router(config)#hostname AIUB
+
+AIUB(config)#int f0/0
+AIUB(config-if)#no shutdown
+AIUB(config-if)#exit
+
+AIUB(config)#int f0/0.1
+AIUB(config-subif)#encapsulation dot1Q 10
+AIUB(config-subif)#ip address 172.16.1.1 255.255.255.0
+AIUB(config-subif)#exit
+
+AIUB(config)#int f0/0.2
+AIUB(config-subif)#encapsulation dot1Q 20
+AIUB(config-subif)#ip address 172.16.2.1 255.255.255.128
+AIUB(config-subif)#exit
+
+Core(config)#int f0/2
+Core(config-if)#switchport mode trunk 
+Core(config-if)#exit
